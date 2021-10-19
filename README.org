@@ -1,0 +1,3 @@
+* Technical writing in Emacs and Org-mode
+
+This repository contains my [[file:presentation.org][presentation]] for EmacsConf 2021.  The presentation is free to use under CreativeCommons ShareAlike license. In addition, all code examples can be freely used under the [[https://mit-license.org/][MIT License]].
