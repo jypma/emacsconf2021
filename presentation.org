@@ -2,26 +2,8 @@
 #+PROPERTY: header-args:restclient :exports both
 #+PROPERTY: header-args :eval never-export
 #+latex_header: \hypersetup{colorlinks=true,linkcolor=blue}
-
-#+BEGIN_SRC elisp :exports none :results none :eval export
-(defun my/org-export-replacements (text backend info)
-  "Replace the localhost placeholder with proper production host for readers to use."
-    (with-temp-buffer
-      (insert text)
-
-      (goto-char (point-min))
-      (while (search-forward "{restclient}" nil t) (replace-match "{text}" nil t))
-
-      (goto-char (point-min))
-      (while (search-forward "{sgml}" nil t) (replace-match "{xml}" nil t))
-
-      (buffer-substring-no-properties (point-min) (point-max))))
-
-(make-variable-buffer-local 'org-export-filter-src-block-functions)
-
-(add-to-list 'org-export-filter-src-block-functions
-  'my/org-export-replacements)
-#+END_SRC
+#+options: H:2
+#+LATEX_CLASS_OPTIONS: [8pt]
 
 * Introduction
 ** This presentation
@@ -89,7 +71,6 @@ Let's make sure we have an XML file to serve up:
 </hello>
 #+END_SRC
 
-
 We can make an actual REST call from within Emacs. The mode for syntax highlighting in the response is automatically taken from the =Content-Type= header, if present.
 
 #+BEGIN_SRC restclient :exports both
@@ -149,15 +130,36 @@ Content-Type: text/xml
 ** Presentations
 
 - Org-mode is also very suitable for making presentations (you're looking at one!).
-
-- Fun to use =org-babel= for live coding / API demonstrations
+  + With =org-tree-slide= you can show one org heading at a time
+  + Fun to use =org-babel= for live coding / API demonstrations
 
 - Presentations can be exported:
 
-  + As plain PDF (=C-c C-e l p=), just like any other org file
+  + As [[file:presentation-plain.pdf][plain PDF]] (=C-c C-e l p=), just like any other org file, but =restclient= blocks require some tweaking:
+#+BEGIN_SRC elisp :exports none :results none :eval export
+(defun my/org-export-replacements (text backend info)
+  "Replace the localhost placeholder with proper production host for readers to use."
+    (with-temp-buffer
+      (insert text)
 
-  + As "beamer" PDF (=C-c C-e l P=), trying to make the PDF actually look like slides
-    * Unfortunately, has a fairly rigid idea about heading structure
+      (goto-char (point-min))
+      (while (search-forward "{restclient}" nil t) (replace-match "{text}" nil t))
+
+      (goto-char (point-min))
+      (while (search-forward "{sgml}" nil t) (replace-match "{xml}" nil t))
+
+      (buffer-substring-no-properties (point-min) (point-max))))
+
+(make-variable-buffer-local 'org-export-filter-src-block-functions)
+
+(add-to-list 'org-export-filter-src-block-functions
+  'my/org-export-replacements)
+#+END_SRC
+
+  + As [[file:presentation-beamer.pdf][beamer PDF]] (=C-c C-e l P=), trying to make the PDF actually look like slides
+    * Unfortunately, all text must be under leaf headings of the same level
+    * For example, for level two, say =#+options: H:2= at the start of your org file
+
 * Packages and configuration
   Let's go through some specific packages that help in the mentioned use cases (in addition to org and org-babel).
 ** Package: ox-beamer
