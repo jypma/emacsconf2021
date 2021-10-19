@@ -1,0 +1,272 @@
+#+TITLE: Technical writing using org-mode
+
+* Introduction
+** This presentation
+- Emacs for "Technical" writing
+  + Developer guide
+  + API reference documentation
+  + Technical presentation
+  + Live demo
+
+- A little about me, Jan Ypma
+  + =jan@ypmania.net=
+  + Independent software developer
+  + Scala / Java, C++ (embedded), a little Rust, and of course Lisp
+  + Emacs for everything
+
+** Emacs and org-mode
+- Emacs
+  + Customizable text editor environment
+
+- Org Mode
+  + Defines text structures for headings, list, table, code blocks and others
+  + Ideal for technical writing: API guides, code presentations, live demos
+
+- Org Babel
+  + Functionality in Org Mode to "execute" code blocks and capture results
+  + Many languages supported, natively or through extensions
+* Packages and configuration
+  Let's go through some specific packages that help in the mentioned use cases (in addition to org and org-babel).
+** Package: ox-beamer
+Export org-mode documents to Latex in [[https://latex-beamer.com/quick-start/][Beamer]] style (PDF presentation handouts)
+
+#+BEGIN_SRC elisp
+(require 'ox-beamer)
+#+END_SRC
+
+** Package: doom-modeline
+A prettier mode line than the default.
+
+#+BEGIN_SRC elisp
+(use-package doom-modeline
+  :ensure t
+  :hook (after-init . doom-modeline-mode))
+#+END_SRC
+** Package: org-superstar
+Customizable way to show (or not) heading bullets in org-mode.
+
+#+BEGIN_SRC elisp
+(use-package org-superstar
+  :hook (org-mode . org-superstar-mode))
+#+END_SRC
+
+** Package: restclient
+Make REST calls by writing documents in Emacs.
+#+BEGIN_SRC elisp
+(use-package restclient
+  :config
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((restclient . t))))
+#+END_SRC
+** Package: ob-restclient
+Makes REST calls from within org-mode as org-babel code block sections.
+#+BEGIN_SRC elisp
+;; From https://github.com/alf/ob-restclient.el
+(require 'ob-restclient)
+#+END_SRC
+
+** Package: org-tree-slide
+Present an org-mode document, one heading at a time.
+#+BEGIN_SRC elisp
+(defun my/presentation-setup ()
+  (shell-command "dunstctl set-paused true")
+  (flyspell-mode 0)
+  (setq text-scale-mode-amount 3)
+  (org-display-inline-images)
+  (text-scale-mode 1)
+  (font-lock-flush)
+  (font-lock-ensure))
+
+(defun my/presentation-end ()
+  (shell-command "dunstctl set-paused false")
+  (flyspell-mode 1)
+  (text-scale-mode 0)
+  (org-remove-inline-images)
+  (font-lock-flush)
+  (font-lock-ensure))
+
+(use-package org-tree-slide
+  ;; Load immediately, since it messes with org-mode faces
+  :demand
+  :hook
+  ((org-tree-slide-play . my/presentation-setup)
+   (org-tree-slide-stop . my/presentation-end))
+  :bind
+  (:map org-mode-map
+        ("<f6>" . org-tree-slide-mode))
+  :custom
+  (org-image-actual-width nil)
+  )
+#+END_SRC
+
+** Other configuration
+*** Customize ellipsis display
+Makes hide-show mode a bit more pretty (helps in presentations).
+
+#+BEGIN_SRC elisp
+;; customize the face as well
+(defface hs-ellipsis
+  '((((class color) (background light)) (:underline t))
+    (((class color) (background dark)) (:underline t))
+    (t (:underline t)))
+  "Face for ellipsis in hideshow mode.")
+
+;; Use this in whitespace-mode
+(defun whitespace-change-ellipsis ()
+  "Change ellipsis when used with `whitespace-mode'."
+  (when buffer-display-table
+    (set-display-table-slot buffer-display-table
+                            'selective-display
+                            ;;(string-to-vector " … ")
+                            (let ((face-offset (* (face-id 'hs-ellipsis) (lsh 1 22))))
+                              (vconcat (mapcar (lambda (c) (+ face-offset c)) " … ")))
+                            )))
+(add-hook 'whitespace-mode-hook #'whitespace-change-ellipsis)
+
+;; Use this in non-whitespace modes
+(set-display-table-slot
+ standard-display-table
+ 'selective-display
+ (let ((face-offset (* (face-id 'hs-ellipsis) (lsh 1 22))))
+   (vconcat (mapcar (lambda (c) (+ face-offset c)) " … "))))
+
+#+END_SRC
+
+*** Show emphasis markers at point
+This makes the bold, italic, etc. markers in org-mode disappear, /except/ when you're within them.
+
+#+BEGIN_SRC elisp
+;;https://www.reddit.com/r/orgmode/comments/43uuck/temporarily_show_emphasis_markers_when_the_cursor/
+;; (adapted to also show verbatim markers)
+(defun my/org-show-emphasis-markers-at-point ()
+  (save-match-data
+    (if (and (or (org-in-regexp org-emph-re 2) (org-in-regexp org-verbatim-re 2))
+	     (>= (point) (match-beginning 3))
+	     (<= (point) (match-end 4))
+	     (member (match-string 3) (mapcar 'car org-emphasis-alist)))
+	(with-silent-modifications
+          (setq my/org-show-emphasis-hidden t)
+	  (remove-text-properties
+	   (match-beginning 3) (match-beginning 5)
+	   '(invisible org-link)))
+      (if my/org-show-emphasis-hidden
+          (progn
+            ;; Add about 100 characters extra, in case we're moving lines.
+            (apply 'font-lock-flush (list (- (match-beginning 3) 100) (+ (match-beginning 5) 100)))
+            (setq my/org-show-emphasis-hidden nil))))))
+#+END_SRC
+*** Image animation
+Animate an image when hovering over it and pressing =a=.
+#+BEGIN_SRC elisp
+(defun my/image-animate ()
+    "Starts to animate the image under the cursor"
+    (interactive)
+    (image-animate (image--get-imagemagick-and-warn)))
+
+(define-key image-map (kbd "a") 'my/image-animate)
+#+END_SRC
+
+*** Org mode startup
+#+BEGIN_SRC elisp
+(defun my/org-mode-setup ()
+  (whitespace-mode -1)
+
+  ;; https://orgmode.org/list/87pn8huuq2.fsf@iki.fi/t/
+  (electric-indent-local-mode -1)
+
+  ;; Shorten some text
+  (setq prettify-symbols-alist
+        (map-merge 'list prettify-symbols-alist
+                   `(
+                     ("#+name:" . "✎")
+                     ("#+NAME:" . "✎")
+                     ("#+BEGIN_SRC" . "➤")
+                     ("#+BEGIN_EXAMPLE" . "➤")
+                     ("#+END_SRC" . "⏹")
+                     ("#+END_EXAMPLE" . "⏹")
+                     ("#+RESULTS:" . "🠋")
+                     )))
+  (prettify-symbols-mode 0)
+  (prettify-symbols-mode)
+
+  ;; Auto-wrap lines
+  (visual-line-mode)
+  (setq adaptive-wrap-extra-indent 2)
+
+  (variable-pitch-mode)
+  ;; from https://lepisma.xyz/2017/10/28/ricing-org-mode/
+  ;; A little bit of space in the left/right margins:
+  (setq left-margin-width 2)
+  (setq right-margin-width 2)
+  (set-window-buffer nil (current-buffer))
+
+  (flyspell-mode 1)
+  (ws-butler-mode 1)
+
+  (defvar-local my/org-show-emphasis-hidden nil)
+  (add-hook 'post-command-hook
+	    'my/org-show-emphasis-markers-at-point nil t))
+#+END_SRC
+
+*** Miscellaneous
+#+BEGIN_SRC elisp
+;; fontify inside org mode
+(setq org-src-fontify-natively t)
+
+;; Don't indent org documents
+(setq org-startup-indented nil)
+
+#+END_SRC
+
+* Demo
+** Developer guide
+
+Let's pretend we're writing a developer guide for something that requires us to set up services using [[https://docs.docker.com/compose/][docker compose]].
+
+#+BEGIN_SRC yaml :tangle docker-compose.yml
+version: '3.1'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.8.16-alpine
+#+END_SRC
+
+The above code block is automatically copied into [[file:docker-compose.yml]] when this file is tangled (using =C-c C-v t=).
+
+We can now run a shell script to start the docker containers:
+
+#+BEGIN_SRC sh
+docker-compose up -d
+docker-compose ps
+#+END_SRC
+
+#+RESULTS:
+| NAME           | COMMAND              | SERVICE  | STATUS  | PORTS     |
+| org-rabbitmq-1 | docker-entrypoint.s… | rabbitmq | running | 25672/tcp |
+
+Note how the output was automatically formatted into a real org-mode table.
+
+** Rest API Guide
+
+Let's pretend we're documenting a REST API.
+
+#+BEGIN_SRC restclient
+GET https://
+
+#+END_SRC
+
+** Presentations
+
+- Org-mode is also very suitable for making presentations (you're looking at one!).
+
+
+- Fun to use =org-babel= for live coding / API demonstrations
+
+
+- Presentations can be exported:
+
+  + As plain PDF (=C-c C-e l p=), just like any other org file
+
+  + As "beamer" PDF (=C-c C-e l P=), trying to make the PDF actually look like slides
+    * Unfortunately, has a fairly rigid idea about heading structure
