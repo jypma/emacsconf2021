@@ -1,4 +1,27 @@
 #+TITLE: Technical writing using org-mode
+#+PROPERTY: header-args:restclient :exports both
+#+PROPERTY: header-args :eval never-export
+#+latex_header: \hypersetup{colorlinks=true,linkcolor=blue}
+
+#+BEGIN_SRC elisp :exports none :results none :eval export
+(defun my/org-export-replacements (text backend info)
+  "Replace the localhost placeholder with proper production host for readers to use."
+    (with-temp-buffer
+      (insert text)
+
+      (goto-char (point-min))
+      (while (search-forward "{restclient}" nil t) (replace-match "{text}" nil t))
+
+      (goto-char (point-min))
+      (while (search-forward "{sgml}" nil t) (replace-match "{xml}" nil t))
+
+      (buffer-substring-no-properties (point-min) (point-max))))
+
+(make-variable-buffer-local 'org-export-filter-src-block-functions)
+
+(add-to-list 'org-export-filter-src-block-functions
+  'my/org-export-replacements)
+#+END_SRC
 
 * Introduction
 ** This presentation
@@ -25,6 +48,116 @@
 - Org Babel
   + Functionality in Org Mode to "execute" code blocks and capture results
   + Many languages supported, natively or through extensions
+* Demo
+** Developer guide
+
+In this section, we'll demonstrate techniques for writing a developer guide. For example, imagine setting up something that requires us to run services using [[https://docs.docker.com/compose/][docker compose]].
+
+#+BEGIN_SRC yaml :tangle docker-compose.yml
+version: '3.1'
+
+services:
+  webserver:
+    image: nginx
+    volumes:
+      - ".:/usr/share/nginx/html:ro"
+    ports:
+     - "8080:80"
+#+END_SRC
+
+The above code block is automatically copied into [[file:docker-compose.yml]] when this file is tangled (using =C-c C-v t=).
+
+We can now run a shell script to start the docker containers:
+
+#+BEGIN_SRC sh :results output :exports both
+docker-compose up -d
+docker-compose ps
+#+END_SRC
+
+#+RESULTS:
+: NAME                        COMMAND                  SERVICE             STATUS              PORTS
+: emacsconf2021-webserver-1   "/docker-entrypoint.…"   webserver           running             0.0.0.0:8080->80/tcp, :::8080->80/tcp
+
+** Rest API Guide
+
+Let's we're documenting a REST API. Conveniently, we have an Nginx server running on port 8080 (see previous section).
+
+Let's make sure we have an XML file to serve up:
+#+BEGIN_SRC xml :tangle test.xml
+<hello>
+  This is XML!
+</hello>
+#+END_SRC
+
+
+We can make an actual REST call from within Emacs. The mode for syntax highlighting in the response is automatically taken from the =Content-Type= header, if present.
+
+#+BEGIN_SRC restclient :exports both
+GET http://localhost:8080/test.xml
+
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC sgml
+<hello>
+  This is XML!
+</hello>
+
+<!-- GET http://localhost:8080/test.xml -->
+<!-- HTTP/1.1 200 OK -->
+<!-- Server: nginx/1.21.3 -->
+<!-- Date: Tue, 19 Oct 2021 17:51:46 GMT -->
+<!-- Content-Type: text/xml -->
+<!-- Content-Length: 32 -->
+<!-- Last-Modified: Tue, 19 Oct 2021 17:51:43 GMT -->
+<!-- Connection: keep-alive -->
+<!-- ETag: "616f05af-20" -->
+<!-- Accept-Ranges: bytes -->
+<!-- Request duration: 0.003053s -->
+#+END_SRC
+
+Let's pretend to PUT a file (Nginx won't allow it)
+#+BEGIN_SRC restclient
+PUT http://localhost:8080/test.xml
+Content-Type: text/xml
+
+<hello>
+  Here's some XML!
+</hello>
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC html
+<html>
+<head><title>405 Not Allowed</title></head>
+<body>
+<center><h1>405 Not Allowed</h1></center>
+<hr><center>nginx/1.21.3</center>
+</body>
+</html>
+
+<!-- PUT http://localhost:8080/test.xml -->
+<!-- HTTP/1.1 405 Not Allowed -->
+<!-- Server: nginx/1.21.3 -->
+<!-- Date: Tue, 19 Oct 2021 17:51:53 GMT -->
+<!-- Content-Type: text/html -->
+<!-- Content-Length: 157 -->
+<!-- Connection: keep-alive -->
+<!-- Request duration: 0.001064s -->
+#+END_SRC
+
+** Presentations
+
+- Org-mode is also very suitable for making presentations (you're looking at one!).
+
+- Fun to use =org-babel= for live coding / API demonstrations
+
+- Presentations can be exported:
+
+  + As plain PDF (=C-c C-e l p=), just like any other org file
+
+  + As "beamer" PDF (=C-c C-e l P=), trying to make the PDF actually look like slides
+    * Unfortunately, has a fairly rigid idea about heading structure
 * Packages and configuration
   Let's go through some specific packages that help in the mentioned use cases (in addition to org and org-babel).
 ** Package: ox-beamer
@@ -219,54 +352,3 @@ Animate an image when hovering over it and pressing =a=.
 
 #+END_SRC
 
-* Demo
-** Developer guide
-
-Let's pretend we're writing a developer guide for something that requires us to set up services using [[https://docs.docker.com/compose/][docker compose]].
-
-#+BEGIN_SRC yaml :tangle docker-compose.yml
-version: '3.1'
-
-services:
-  rabbitmq:
-    image: rabbitmq:3.8.16-alpine
-#+END_SRC
-
-The above code block is automatically copied into [[file:docker-compose.yml]] when this file is tangled (using =C-c C-v t=).
-
-We can now run a shell script to start the docker containers:
-
-#+BEGIN_SRC sh
-docker-compose up -d
-docker-compose ps
-#+END_SRC
-
-#+RESULTS:
-| NAME           | COMMAND              | SERVICE  | STATUS  | PORTS     |
-| org-rabbitmq-1 | docker-entrypoint.s… | rabbitmq | running | 25672/tcp |
-
-Note how the output was automatically formatted into a real org-mode table.
-
-** Rest API Guide
-
-Let's pretend we're documenting a REST API.
-
-#+BEGIN_SRC restclient
-GET https://
-
-#+END_SRC
-
-** Presentations
-
-- Org-mode is also very suitable for making presentations (you're looking at one!).
-
-
-- Fun to use =org-babel= for live coding / API demonstrations
-
-
-- Presentations can be exported:
-
-  + As plain PDF (=C-c C-e l p=), just like any other org file
-
-  + As "beamer" PDF (=C-c C-e l P=), trying to make the PDF actually look like slides
-    * Unfortunately, has a fairly rigid idea about heading structure
