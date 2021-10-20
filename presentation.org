@@ -7,6 +7,8 @@
 
 * Introduction
 ** This presentation
+- Find it at =https://github.com/jypma/emacsconf2021/=
+
 - Emacs for "Technical" writing
   + Developer guide
   + API reference documentation
@@ -57,8 +59,6 @@ docker-compose ps
 #+END_SRC
 
 #+RESULTS:
-: NAME                        COMMAND                  SERVICE             STATUS              PORTS
-: emacsconf2021-webserver-1   "/docker-entrypoint.…"   webserver           running             0.0.0.0:8080->80/tcp, :::8080->80/tcp
 
 ** Rest API Guide
 
