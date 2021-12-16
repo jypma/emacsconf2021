@@ -1,4 +1,5 @@
 #+TITLE: Technical writing using org-mode
+#+DATE:
 #+PROPERTY: header-args:restclient :exports both
 #+PROPERTY: header-args :eval never-export
 #+latex_header: \hypersetup{colorlinks=true,linkcolor=blue}
@@ -6,8 +7,8 @@
 #+LATEX_CLASS_OPTIONS: [8pt]
 
 * Introduction
-** This presentation
-- Find it at =https://github.com/jypma/emacsconf2021/=
+** Agenda
+- Find this presentation at =https://github.com/jypma/emacsconf2021/=
 
 - Emacs for "Technical" writing
   + Developer guide
@@ -21,17 +22,134 @@
   + Scala / Java, C++ (embedded), a little Rust, and of course Lisp
   + Emacs for everything
 
-** Emacs and org-mode
-- Emacs
-  + Customizable text editor environment
+** About text editors
+
+There are two kinds of computer programs and users:
+
+1. The /program/ makes the /user/ conform to the /program's/ ideas (and the user does so)
+
+2. The /user/ makes the /program/ conform to the /user's/ ideas (and the program does so)
+
+** About free software
+
+- Allow users to run the software for any purpose
+
+- Allow users to study, change, and distribute it and any adapted versions
+
+- "Free" refers to freedom, not price
+
+** About Emacs
+
+- Customizable text editor environment
+
+- Written in 30% C, 70% Lisp
+  + The lisp part is written to be generic and extensible
+
+- Free software
+  + 35+ year track record (GNU Emacs)
+  + You control updates
+  + Version controlled configuration
+  + Huge community
+  + Lisp is really easy to learn
+
+- Pluggable everything
+  + Which LSP mode
+  + What completion framework
+  + Which modal keybinding
+
+* A tour of emacs
+
+** This is emacs
+
+Start a plain emacs with default configuration:
+
+#+BEGIN_SRC sh :results none
+emacs -q
+#+END_SRC
+
+** Emacs starter packs
+
+- [[https://www.spacemacs.org/][Spacemacs]] (opinionated, tries to provide an integrated experience)
+- [[https://github.com/hlissner/doom-emacs][Doom emacs]]  (more base bones)
+- [[https://github.com/jypma/emacs.d][My own config]] (just as an example, please don't fork this)
+
+- There is no one =emacs=
+  + Every emacs user will have their own, unique, configuration, look, and feel
+  + Tweaking and customizing is the whole point of it!
+
+** Language servers and =lsp-mode=
+*** Introduction
+- /Language Server Protocol/ (LSP)
+  + REST/JSON API between an editor and a language-aware back-end
+  + Started by Microsoft for Visual Studio Code, but now used by tenths of editors and 100s of languages
+
+- =lsp-mode=
+  + One of two major projects implementing LSP support for emacs
+  + Support out of the box for:
+
+    ActionScript, Ada, Angular, Bash, Beancount, C++ , C++ , C# , C# , Clojure, CMake, Crystal, CSS/LessCSS/SASS/SCSS, D, Dart, Dhall, Dockerfile, Elixir, Elm, Erlang, Eslint, F#, Fortran, GDScript, Go, Grammarly, GraphQL, Groovy, Hack, HTML, Haskell, Java, Javascript/Typescript, JavaScript Flow, Json, Julia, Kotlin, LanguageTool, Lua, Markdown, MSSQL, Nginx, Nim, Ni,  OCaml , Pascal/Object Pascal, Perl, PHP , PHP , PHP , PHP ,,ershell, Prolog, PureScript, Python , Python , Python , Python,right), Python , R, Racket , Racket , Ruby, Rust , Rust , Scala, SQL , Svelte, Swift, Terraform, TeX, LaTeX, etc , TeX, LaTeX, etc , TeX, LaTeX, etc , TOML, V, Vala, Verilog/SystemVerilog , Verilog/SystemVerilog , VHDL, Vimscript, Vue 2, Vue 3, XML, YAML, Zig
+*** Examples
+
+Let's visit some code!
+
+- Here's ZIO, a [[file:~/workspace/zio/core/shared/src/main/scala/zio/ZIO.scala][Big scala project]] (built using SBT)
+- Here's a [[file:~/workspace/LB3210/demo-project/src/main/java/com/example/demoproject/DemoController.java][Java project]] (built using Maven)
+- Here's some [[file:~/workspace/roomsensor8266/src/main.cpp::while (!lightMeter.measurementReady(true)) {][C++ code]] (built using =Makefile=)
+** Dired
+The way to view (and edit) directories in emacs
+
+- Let's look at the directory containing this presentation (=C-x C-j=)
+
+- We can navigate up and down in the tree
+
+- Since this is text, we can edit the buffer as well (=C-x C-q=)
+
+** Magit
+- Manage git directly from within emacs
+
+- Every single git feature (and more) with convenient menus and shortcuts
+
+- Customizable to your workflow (rebasing, branching)
+
+- Extensions
+  + =forge=: Manage pull request for Github (and others)
+  + [[https://github.com/charignon/github-review][github-review]]: Do code reviews for Github (and others)
+
+** Tramp
+- Treat any system with shell access as if it's local
+
+- =sudo=, =ssh=, and chains of these
+- docker
+- kubernetes
+
+- Any emacs feature will work here, e.g.
+
+  + Dired
+  + Magit
+  + =lsp-mode= (if language server is installed remotely)
+
+** Other features
+- Clipboard history ("kill ring")
+
+- Keyboard macros
+
+- E-mail (=mu4e=)
+
+- Youtube (=elfeed=, =youtube-dl=, =mpv=)
+
+** Org mode
 
 - Org Mode
   + Defines text structures for headings, list, table, code blocks and others
+  + First version in 2003
   + Ideal for technical writing: API guides, code presentations, live demos
 
 - Org Babel
   + Functionality in Org Mode to "execute" code blocks and capture results
   + Many languages supported, natively or through extensions
+
+- You've been viewing this presentation in =org-mode=
+
 * Demo
 ** Developer guide
 
@@ -59,6 +177,8 @@ docker-compose ps
 #+END_SRC
 
 #+RESULTS:
+: NAME                        COMMAND                  SERVICE             STATUS              PORTS
+: emacsconf2021-webserver-1   "/docker-entrypoint.…"   webserver           running             0.0.0.0:8080->80/tcp, :::8080->80/tcp
 
 ** Rest API Guide
 
@@ -87,14 +207,14 @@ GET http://localhost:8080/test.xml
 <!-- GET http://localhost:8080/test.xml -->
 <!-- HTTP/1.1 200 OK -->
 <!-- Server: nginx/1.21.3 -->
-<!-- Date: Tue, 19 Oct 2021 17:51:46 GMT -->
+<!-- Date: Wed, 20 Oct 2021 07:51:20 GMT -->
 <!-- Content-Type: text/xml -->
 <!-- Content-Length: 32 -->
-<!-- Last-Modified: Tue, 19 Oct 2021 17:51:43 GMT -->
+<!-- Last-Modified: Wed, 20 Oct 2021 07:50:56 GMT -->
 <!-- Connection: keep-alive -->
-<!-- ETag: "616f05af-20" -->
+<!-- ETag: "616fca60-20" -->
 <!-- Accept-Ranges: bytes -->
-<!-- Request duration: 0.003053s -->
+<!-- Request duration: 0.175990s -->
 #+END_SRC
 
 Let's pretend to PUT a file (Nginx won't allow it)
@@ -120,11 +240,11 @@ Content-Type: text/xml
 <!-- PUT http://localhost:8080/test.xml -->
 <!-- HTTP/1.1 405 Not Allowed -->
 <!-- Server: nginx/1.21.3 -->
-<!-- Date: Tue, 19 Oct 2021 17:51:53 GMT -->
+<!-- Date: Wed, 20 Oct 2021 07:52:33 GMT -->
 <!-- Content-Type: text/html -->
 <!-- Content-Length: 157 -->
 <!-- Connection: keep-alive -->
-<!-- Request duration: 0.001064s -->
+<!-- Request duration: 0.008161s -->
 #+END_SRC
 
 ** Presentations
@@ -147,6 +267,9 @@ Content-Type: text/xml
 
       (goto-char (point-min))
       (while (search-forward "{sgml}" nil t) (replace-match "{xml}" nil t))
+
+      (goto-char (point-min))
+      (while (search-forward "{jshell}" nil t) (replace-match "{java}" nil t))
 
       (buffer-substring-no-properties (point-min) (point-max))))
 
@@ -354,3 +477,11 @@ Animate an image when hovering over it and pressing =a=.
 
 #+END_SRC
 
+* Wrapping up
+
+- Try this yourself
+  + Set goals, learn one package at a time
+
+- Next steps
+  + Org Babel for unit tests
+  + Expand org babel for Java and Scala REPL (=jshell= and =ammonite=)
