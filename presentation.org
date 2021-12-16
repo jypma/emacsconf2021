@@ -26,9 +26,9 @@
 
 There are two kinds of computer programs and users:
 
-1. The /program/ makes the /user/ conform to the /program's/ ideas (and the user does so)
+1. The /program/ makes the /user/ conform to the /program's/ flow (and the user does so)
 
-2. The /user/ makes the /program/ conform to the /user's/ ideas (and the program does so)
+2. The /user/ makes the /program/ conform to the /user's/ flow (and the program does so)
 
 ** About free software
 
@@ -70,7 +70,7 @@ emacs -q
 ** Emacs starter packs
 
 - [[https://www.spacemacs.org/][Spacemacs]] (opinionated, tries to provide an integrated experience)
-- [[https://github.com/hlissner/doom-emacs][Doom emacs]]  (more base bones)
+- [[https://github.com/hlissner/doom-emacs][Doom emacs]]  (more bare-bones)
 - [[https://github.com/jypma/emacs.d][My own config]] (just as an example, please don't fork this)
 
 - There is no one =emacs=
@@ -85,8 +85,8 @@ emacs -q
 
 - =lsp-mode=
   + One of two major projects implementing LSP support for emacs
-  + Support out of the box for:
 
+  + Support out of the box for:
     ActionScript, Ada, Angular, Bash, Beancount, C++ , C++ , C# , C# , Clojure, CMake, Crystal, CSS/LessCSS/SASS/SCSS, D, Dart, Dhall, Dockerfile, Elixir, Elm, Erlang, Eslint, F#, Fortran, GDScript, Go, Grammarly, GraphQL, Groovy, Hack, HTML, Haskell, Java, Javascript/Typescript, JavaScript Flow, Json, Julia, Kotlin, LanguageTool, Lua, Markdown, MSSQL, Nginx, Nim, Ni,  OCaml , Pascal/Object Pascal, Perl, PHP , PHP , PHP , PHP ,,ershell, Prolog, PureScript, Python , Python , Python , Python,right), Python , R, Racket , Racket , Ruby, Rust , Rust , Scala, SQL , Svelte, Swift, Terraform, TeX, LaTeX, etc , TeX, LaTeX, etc , TeX, LaTeX, etc , TOML, V, Vala, Verilog/SystemVerilog , Verilog/SystemVerilog , VHDL, Vimscript, Vue 2, Vue 3, XML, YAML, Zig
 *** Examples
 
@@ -115,18 +115,24 @@ The way to view (and edit) directories in emacs
   + =forge=: Manage pull request for Github (and others)
   + [[https://github.com/charignon/github-review][github-review]]: Do code reviews for Github (and others)
 
-** Tramp
-- Treat any system with shell access as if it's local
+- Let's make a commit with any changes to this presentation
 
-- =sudo=, =ssh=, and chains of these
-- docker
-- kubernetes
+** Tramp
+- /Transparent Remote Access Multiple Protocols/
+
+- Treat any system with shell access as if it's local
+  + =sudo=, =ssh=, and chains of these
+  + docker
+  + kubernetes
 
 - Any emacs feature will work here, e.g.
-
   + Dired
   + Magit
   + =lsp-mode= (if language server is installed remotely)
+
+Demos:
+- SSH to =jpad= (local machine loopback)
+- =kubectl= to a docker container running on Azure kubernetes
 
 ** Other features
 - Clipboard history ("kill ring")
@@ -149,6 +155,8 @@ The way to view (and edit) directories in emacs
   + Many languages supported, natively or through extensions
 
 - You've been viewing this presentation in =org-mode=
+
+- Work wrapping with indent
 
 * Demo
 ** Developer guide
@@ -239,6 +247,13 @@ Content-Type: text/xml
   + As [[file:presentation-beamer.pdf][beamer PDF]] (=C-c C-e l P=), trying to make the PDF actually look like slides
     * Unfortunately, all text must be under leaf headings of the same level
     * For example, for level two, say =#+options: H:2= at the start of your org file
+
+** Bonus: Java Microservices Course
+
+A complete course on [[file:~/workspace/LB3210/LB3210.org][Java and Microservices]] presented using Org-Mode.
+
+- Example =java= block (org-babel built-in): [[file:~/workspace/LB3210/LB3210.org::*Type-inferred variables (Java 11+)][Type-inferred variables (Java 11+)]]
+- Example =jshell= block (being developed by me): [[file:~/workspace/java-17-demo/presentation.org::*VAVR][VAVR]]
 
 * Packages and configuration
   Let's go through some specific packages that help in the mentioned use cases (in addition to org and org-babel).
