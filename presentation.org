@@ -176,10 +176,6 @@ docker-compose up -d
 docker-compose ps
 #+END_SRC
 
-#+RESULTS:
-: NAME                        COMMAND                  SERVICE             STATUS              PORTS
-: emacsconf2021-webserver-1   "/docker-entrypoint.…"   webserver           running             0.0.0.0:8080->80/tcp, :::8080->80/tcp
-
 ** Rest API Guide
 
 Let's we're documenting a REST API. Conveniently, we have an Nginx server running on port 8080 (see previous section).
@@ -198,25 +194,6 @@ GET http://localhost:8080/test.xml
 
 #+END_SRC
 
-#+RESULTS:
-#+BEGIN_SRC sgml
-<hello>
-  This is XML!
-</hello>
-
-<!-- GET http://localhost:8080/test.xml -->
-<!-- HTTP/1.1 200 OK -->
-<!-- Server: nginx/1.21.3 -->
-<!-- Date: Wed, 20 Oct 2021 07:51:20 GMT -->
-<!-- Content-Type: text/xml -->
-<!-- Content-Length: 32 -->
-<!-- Last-Modified: Wed, 20 Oct 2021 07:50:56 GMT -->
-<!-- Connection: keep-alive -->
-<!-- ETag: "616fca60-20" -->
-<!-- Accept-Ranges: bytes -->
-<!-- Request duration: 0.175990s -->
-#+END_SRC
-
 Let's pretend to PUT a file (Nginx won't allow it)
 #+BEGIN_SRC restclient
 PUT http://localhost:8080/test.xml
@@ -225,26 +202,6 @@ Content-Type: text/xml
 <hello>
   Here's some XML!
 </hello>
-#+END_SRC
-
-#+RESULTS:
-#+BEGIN_SRC html
-<html>
-<head><title>405 Not Allowed</title></head>
-<body>
-<center><h1>405 Not Allowed</h1></center>
-<hr><center>nginx/1.21.3</center>
-</body>
-</html>
-
-<!-- PUT http://localhost:8080/test.xml -->
-<!-- HTTP/1.1 405 Not Allowed -->
-<!-- Server: nginx/1.21.3 -->
-<!-- Date: Wed, 20 Oct 2021 07:52:33 GMT -->
-<!-- Content-Type: text/html -->
-<!-- Content-Length: 157 -->
-<!-- Connection: keep-alive -->
-<!-- Request duration: 0.008161s -->
 #+END_SRC
 
 ** Presentations
